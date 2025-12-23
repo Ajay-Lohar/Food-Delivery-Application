@@ -10,11 +10,12 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 
 @Configuration
-public class AWSConfig {
+public class FoodServiceimpl {
     @Value("${aws.access.key}")
     private String accesskey;
     @Value("${aws.secret.key}")
     private String secretkey;
+
     @Value("${aws.region}")
     private String region;
 
