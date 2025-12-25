@@ -5,6 +5,7 @@ import in.ajay.foodiesapi.io.FoodRequest;
 import in.ajay.foodiesapi.io.FoodResponse;
 import in.ajay.foodiesapi.repository.FoodRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,13 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class FoodServiceImpl  implements FoodService{
 
-    private final S3Client s3Client;
-    private final FoodRepository foodRepository;
+    @Autowired
+    private  S3Client s3Client;
+
+    @Autowired
+    private  FoodRepository foodRepository;
 
     @Value("${aws.s3.bucketname}")
     private  String bucketName;
