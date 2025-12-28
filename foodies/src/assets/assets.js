@@ -30,7 +30,7 @@ export const categories =[
     icon:cake
    },
    { 
-    category:'Ice Creams',
+    category:'Ice cream',
     icon:icecream
    },
    { 
