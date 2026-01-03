@@ -5,6 +5,7 @@ import in.ajay.foodiesapi.io.UserRequest;
 import in.ajay.foodiesapi.io.UserResponse;
 import in.ajay.foodiesapi.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -16,6 +17,8 @@ public class UserServiceImpl implements UserService {
     private  final  UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private final AuthenticationFacad authenticationFacad;
+
     @Override
     public UserResponse registerUser(UserRequest request) {
       UserEntity newUser =  convertEntity(request);
@@ -24,6 +27,15 @@ public class UserServiceImpl implements UserService {
 
 
     }
+
+    @Override
+    public String findByUserId() {
+        String loggdInUserEmail = authenticationFacad.getAuthentication().getName();
+        UserEntity loggedInUser = userRepository.findByEmail(loggdInUserEmail).orElseThrow(()->new UsernameNotFoundException("User Not Found"));
+        return loggedInUser.getId();
+
+    }
+
 
     private UserEntity convertEntity(UserRequest request) {
        return  UserEntity.builder()

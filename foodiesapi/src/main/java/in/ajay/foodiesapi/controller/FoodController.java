@@ -30,6 +30,8 @@ public class FoodController {
         FoodRequest request = null;
 
         request = objectMapper.readValue(foodString, FoodRequest.class);
+
+
         FoodResponse response = foodService.addFood(request , file);
         return response;
 
