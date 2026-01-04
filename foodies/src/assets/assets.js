@@ -8,10 +8,15 @@ import pizza from './pizza.webp';
 import salad from './salad.webp';
 import rolls from './rolls.webp';
 
+import ajayProfile from './Ajay.gif';
+import profile from './Profile.png';
+
 
 export const assets ={
     logo, 
-    cart
+    cart,
+    ajayProfile,
+    profile
    
 }
 
