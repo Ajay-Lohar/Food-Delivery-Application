@@ -1,53 +1,50 @@
-import logo from './logo.png';
-import cart from './cart.webp';
-import biryani from './biryani.webp';
-import burger from './burger.webp';
-import cake from './cake.webp';
-import icecream from './icecream.webp';
-import pizza from './pizza.webp';
-import salad from './salad.webp';
-import rolls from './rolls.webp';
+import logo from "./logo.png";
+import cart from "./cart.webp";
+import biryani from "./biryani.webp";
+import burger from "./burger.webp";
+import cake from "./cake.webp";
+import icecream from "./icecream.webp";
+import pizza from "./pizza.webp";
+import salad from "./salad.webp";
+import rolls from "./rolls.webp";
 
-import ajayProfile from './Ajay.gif';
-import profile from './Profile.png';
+import ajayProfile from "./Ajay.gif";
+import profile from "./Profile.png";
 
+export const assets = {
+  logo,
+  cart,
+  ajayProfile,
+  profile,
+};
 
-export const assets ={
-    logo, 
-    cart,
-    ajayProfile,
-    profile
-   
-}
-
-export const categories =[
-
-   { 
-    category:'Biryani',
-    icon:biryani
-   },
-   { 
-    category:'Burger',
-    icon:burger
-   },
-   { 
-    category:'Cake',
-    icon:cake
-   },
-   { 
-    category:'Ice cream',
-    icon:icecream
-   },
-   { 
-    category:'Pizza',
-    icon:pizza
-   },
-   { 
-    category:'Salad',
-    icon:salad
-   },
-   { 
-    category:'Rolls',
-    icon:rolls
-   }
-]
+export const categories = [
+  {
+    category: "Biryani",
+    icon: biryani,
+  },
+  {
+    category: "Burger",
+    icon: burger,
+  },
+  {
+    category: "Cake",
+    icon: cake,
+  },
+  {
+    category: "Ice cream",
+    icon: icecream,
+  },
+  {
+    category: "Pizza",
+    icon: pizza,
+  },
+  {
+    category: "Salad",
+    icon: salad,
+  },
+  {
+    category: "Rolls",
+    icon: rolls,
+  },
+];
