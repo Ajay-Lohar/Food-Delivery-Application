@@ -12,17 +12,16 @@ import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 
 
 @Service
-@RequiredArgsConstructor
+
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
-    private OrderRepository orderRepository;
+    private   OrderRepository orderRepository;
     @Autowired
     private  UserService userService;
 
@@ -73,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
         return  OrderEntity.builder()
                 .userAddress(request.getUserAddress())
                 .amount(request.getAmount())
-                .orderItems(request.getOrderItems())
+                .orderedItems(request.getOrderedItems())
                 .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
                 .orderStatus(request.getOrderStatus())

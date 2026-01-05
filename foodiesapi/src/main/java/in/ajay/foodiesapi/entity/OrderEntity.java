@@ -8,9 +8,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document(collection =  "orders")
 @Data
 @Builder
+@Document(collection = "orders")
 public class OrderEntity {
     @Id
     private String id;
@@ -18,11 +18,11 @@ public class OrderEntity {
     private String userAddress;
     private String phoneNumber;
     private String email;
-    private List<OrderItem> orderItems;
+    private List<OrderItem> orderedItems;
     private double amount;
     private String paymentStatus;
     private String razorpayOrderId;
-    private String signature;
+    private String razorpaySignature;
     private String orderStatus;
 
 
