@@ -6,6 +6,7 @@ import com.razorpay.RazorpayException;
 import in.ajay.foodiesapi.entity.OrderEntity;
 import in.ajay.foodiesapi.io.OrderRequest;
 import in.ajay.foodiesapi.io.OrderResponse;
+import in.ajay.foodiesapi.repository.CartRepository;
 import in.ajay.foodiesapi.repository.OrderRepository;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -24,6 +28,9 @@ public class OrderServiceImpl implements OrderService {
     private   OrderRepository orderRepository;
     @Autowired
     private  UserService userService;
+
+    @Autowired
+    private CartRepository cartRepository;
 
     @Value("${razorpay_key}")
     private String RAZORPAY_KEY;
@@ -54,6 +61,47 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    @Override
+    public void verifyPayment(Map<String, String> paymentData, String status) {
+        String razorpayOrderId =paymentData.get("razorpay_order_id");
+        OrderEntity existingOrder =orderRepository.findByRazorpayOrderId(razorpayOrderId)
+                .orElseThrow(()-> new RuntimeException("Order not found"));
+        existingOrder.setPaymentStatus(status);
+        existingOrder.setRazorpaySignature(paymentData.get("razorpay_signature"));
+        existingOrder.setRazorpayPaymentId(paymentData.get("razorpay_payment_id"));
+        orderRepository.save(existingOrder);
+        if ("paid".equalsIgnoreCase(status)) {
+            cartRepository.deleteByUserId(existingOrder.getUserId());
+        }
+    }
+
+    @Override
+    public List<OrderResponse> getUserOrders() {
+        String loggedInUserId = userService.findByUserId();
+        List<OrderEntity> list =orderRepository.findByUserId(loggedInUserId);
+        return  list.stream().map(entity -> convertToResponse(entity)).collect(Collectors.toList());
+    }
+
+    @Override
+    public void removeOrder(String orderId) {
+        orderRepository.deleteById(orderId);
+
+    }
+
+    @Override
+    public List<OrderResponse> getOrderOfAllUsers() {
+        List<OrderEntity>list =orderRepository.findAll();
+        return  list.stream().map(entity -> convertToResponse(entity)).collect(Collectors.toList());
+    }
+
+    @Override
+    public void updateOrderStatus(String orderId, String status) {
+       OrderEntity entity = orderRepository.findById(orderId)
+                .orElseThrow(()-> new RuntimeException("Order not found"));
+       entity.setOrderStatus(status);
+       orderRepository.save(entity);
+    }
+
     private OrderResponse convertToResponse(OrderEntity newOrder) {
         return OrderResponse.builder()
                 .id(newOrder.getId())
@@ -65,6 +113,7 @@ public class OrderServiceImpl implements OrderService {
                 .orderStatus(newOrder.getOrderStatus())
                 .email(newOrder.getEmail())
                 .phoneNumber(newOrder.getPhoneNumber())
+                .orderItems(newOrder.getOrderedItems())
                 .build();
     }
 
