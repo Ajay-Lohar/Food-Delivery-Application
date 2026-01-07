@@ -1,11 +1,142 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import "./PlaceOrder.css";
 import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
 import { caculateCartTotal } from "../../util/cartUtils";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { RAZORPAY_KEY } from "../../util/containts";
+import { useNavigate } from "react-router-dom";
+import Razorpay from "razorpay";
 
 const PlaceOrder = () => {
-  const { foodList, quantities, setQuantities } = useContext(StoreContext);
+  const { foodList, quantities, setQuantities, token } =
+    useContext(StoreContext);
+  const navigate = useNavigate();
+  const [data, setData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
+    state: "",
+    city: "",
+    zip: "",
+  });
+
+  const onchangeHandler = (event) => {
+    const name = event.target.name;
+    const value = event.target.value;
+    setData((data) => ({ ...data, [name]: value }));
+  };
+
+  const onsubmitHandler = async (event) => {
+    event.preventDefault();
+
+    const orderData = {
+      userAddress: `${data.firstName} ${data.lastName},${data.address},${data.city},${data.state},${data.zip}`,
+      phoneNumber: data.phoneNumber,
+      email: data.email,
+      orderedItems: cartItems.map((item) => ({
+        foodId: item.foodId,
+        quantity: quantities[item.id],
+        price: item.price * quantities[item.id],
+        category: item.category,
+        imageUrl: item.imageUrl,
+        description: item.description,
+        name: item.name,
+      })),
+      amount: total.toFixed(2),
+      orderStatus: "Preparing",
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/orders/create",
+        orderData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.status === 201 && response.data.razorpayOrderId) {
+        //initiate payment
+        initiateRazorpayPayment(response.data);
+      } else {
+        toast.error("Unable to plcae order please try again.");
+      }
+    } catch (error) {
+      toast.error("Unable to place order please try again.");
+    }
+  };
+
+  const initiateRazorpayPayment = (order) => {
+    const options = {
+      key: RAZORPAY_KEY,
+      amount: order.amount * 100, //convert to paisa
+      currency: "INR",
+      name: "Food Land",
+      description: "Food Order Payment",
+      order_id: order.razorpayOrderId,
+      handler: async function (razorpayResponse) {
+        await verifyPayment(razorpayResponse);
+      },
+      prefill: {
+        name: `${data.firstName} ${data.lastName}`,
+        email: data.email,
+        contact: data.phoneNumber,
+      },
+      theme: { color: "#3399cc" },
+      model: {
+        ondismiss: async function () {
+          toast.error("payment cancelled");
+          await deleteOrder(order.id);
+        },
+      },
+    };
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
+  };
+  const verifyPayment = async (razorpayResponse) => {
+    const paymentData = {
+      razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+      razorpay_order_id: razorpayResponse.razorpay_order_id,
+      razorpay_signature: razorpayResponse.razorpay_signature,
+    };
+    try {
+      const response = await axios.post(
+        'http://localhost:8080/api/orders/verify',
+        paymentData,
+        { headers: { 'Authorization': `Bearer ${token}` } });
+      if (response.status === 200) {
+        toast.success("Payment Successful.");
+        await clearCart();
+        navigate("/myorder");
+      } else {
+        toast.error("Payment failed. please try again");
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error("payment Faild please try again");
+    }
+  };
+
+  const deleteOrder = async (orderId) => {
+    try {
+      await axios.delete('http://localhost:8080/api/orders/' + orderId, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+    } catch (error) {
+      toast.error("something went wrong. Contact support ");
+    }
+  };
+  const clearCart = async () => {
+    try {
+      await axios.delete('http://localhost:8080/api/cart', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      setQuantities({});
+    } catch (error) {
+      toast.error("Error while clearing  the cart.");
+    }
+  };
 
   const cartItems = foodList.filter((food) => quantities[food.id] > 0);
 
@@ -36,7 +167,10 @@ const PlaceOrder = () => {
             </h4>
             <ul className="list-group mb-3">
               {cartItems.map((item) => (
-                <li className="list-group-item d-flex justify-content-between lh-sm">
+                <li
+                  key={item.id}
+                  className="list-group-item d-flex justify-content-between lh-sm"
+                >
                   <div>
                     <h6 className="my-0">{item.name}</h6>
                     <small className="text-body-secondary">
@@ -71,7 +205,7 @@ const PlaceOrder = () => {
           </div>
           <div className="col-md-7 col-lg-8">
             <h4 className="mb-3">Billing address</h4>
-            <form className="needs-validation" novalidate>
+            <form className="needs-validation" onSubmit={onsubmitHandler}>
               <div className="row g-3">
                 <div className="col-sm-6">
                   <label htmlFor="firstName" className="form-label">
@@ -82,7 +216,9 @@ const PlaceOrder = () => {
                     className="form-control"
                     id="firstName"
                     placeholder=""
-                    value=""
+                    name="firstName"
+                    onChange={onchangeHandler}
+                    value={data.firstName}
                     required
                   />
                 </div>
@@ -95,7 +231,9 @@ const PlaceOrder = () => {
                     className="form-control"
                     id="lastName"
                     placeholder=""
-                    value=""
+                    name="lastName"
+                    value={data.lastName}
+                    onChange={onchangeHandler}
                     required
                   />
                 </div>
@@ -110,6 +248,9 @@ const PlaceOrder = () => {
                       className="form-control"
                       id="email"
                       placeholder="Email"
+                      name="email"
+                      value={data.email}
+                      onChange={onchangeHandler}
                       required
                     />
                   </div>
@@ -124,6 +265,9 @@ const PlaceOrder = () => {
                     className="form-control"
                     id="phone"
                     placeholder="9876543210"
+                    name="phoneNumber"
+                    value={data.phoneNumber}
+                    onChange={onchangeHandler}
                     required
                   />
                 </div>
@@ -136,29 +280,45 @@ const PlaceOrder = () => {
                     className="form-control"
                     id="address"
                     placeholder="1234 Main St"
+                    name="address"
+                    value={data.address}
+                    onChange={onchangeHandler}
                     required
                   />
                 </div>
 
-                <div className="col-md-5">
-                  <label htmlFor="country" className="form-label">
-                    Country
-                  </label>
-                  <select className="form-select" id="country" required>
-                    <option value="">Choose...</option>
-                    <option>India</option>
-                  </select>
-                </div>
                 <div className="col-md-4">
                   <label htmlFor="state" className="form-label">
                     State
                   </label>
-                  <select className="form-select" id="state" required>
+                  <select
+                    className="form-select"
+                    id="state"
+                    required
+                    name="state"
+                    value={data.state}
+                    onChange={onchangeHandler}
+                  >
                     <option value="">Choose...</option>
                     <option>Maharashtra</option>
                   </select>
                 </div>
-                <div className="col-md-3">
+                <div className="col-sm-4">
+                  <label htmlFor="lastName" className="form-label">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="city"
+                    placeholder="Mumbai"
+                    name="city"
+                    value={data.city}
+                    onChange={onchangeHandler}
+                    required
+                  />
+                </div>
+                <div className="col-md-4">
                   <label htmlFor="zip" className="form-label">
                     Zip
                   </label>
@@ -168,6 +328,9 @@ const PlaceOrder = () => {
                     id="zip"
                     placeholder="415112"
                     required
+                    name="zip"
+                    value={data.zip}
+                    onChange={onchangeHandler}
                   />
                 </div>
               </div>
