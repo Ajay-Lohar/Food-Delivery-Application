@@ -4,6 +4,7 @@ import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
 import { useContext } from "react";
 import { assets } from "../../assets/assets";
+import './MyOrders.css' 
 
 const MyOrders = () => {
   const { token } = useContext(StoreContext);
@@ -15,19 +16,13 @@ const MyOrders = () => {
     });
     setData(response.data);
     console.log(response.data);
-    
-    
   };
 
-  useEffect(()=>{
-    if(token){
+  useEffect(() => {
+    if (token) {
       fetchOrders();
     }
-
-  },[token])
-
-
-
+  }, [token]);
 
   return (
     <div className="container">
@@ -35,41 +30,43 @@ const MyOrders = () => {
         <div className="col-11 card">
           <table className="table table-responsive">
             <tbody>
-              {
-                data.map((order,index)=>{
-                  return (
-                    <tr key={index}>
-                      <td>
-                        <img src={assets.deliveryLogo} alt="" height={48} width={48} />
-                      </td>
-                      <td>
-                        {
-                          order.orderItems.map((item,index)=>{
-                            if(index===order.orderItems.length - 1){
-                              return item.name + " x "+ item.quantity;
-                            }else{
-                              return item.name + " x "+item.quantity+" , "
-                            }
-                            
-                          })
+              {data.map((order, index) => {
+                return (
+                  <tr key={index}>
+                    <td>
+                      <img
+                        src={assets.deliveryLogo}
+                        alt=""
+                        height={48}
+                        width={48}
+                      />
+                    </td>
+                    <td>
+                      {order.orderItems.map((item, index) => {
+                        if (index === order.orderItems.length - 1) {
+                          return item.name + " x " + item.quantity;
+                        } else {
+                          return item.name + " x " + item.quantity + " , ";
                         }
-                      </td>
-                     
-                      <td>&#x20B9;{order.amount}</td>
-                      <td>Items:{order.orderItems.length}</td>
-                      <td className="fw-bold text-capitalize">&#x25cf;{order.orderStatus}</td>
-                      <td>
-                        <button className="btn btn-sm btn-warning" onClick={fetchOrders}>
-                          <i className="bi bi-arrow-clockwise"></i>
-                        </button>
+                      })}
+                    </td>
 
-                      </td>
-                     
-                    </tr>
-                  )
-                })
-              }
-
+                    <td>&#x20B9;{order.amount}</td>
+                    <td>Items:{order.orderItems.length}</td>
+                    <td className="fw-bold text-capitalize">
+                      &#x25cf;{order.orderStatus}
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-warning"
+                        onClick={fetchOrders}
+                      >
+                        <i className="bi bi-arrow-clockwise"></i>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

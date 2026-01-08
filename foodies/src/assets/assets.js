@@ -11,13 +11,15 @@ import rolls from "./rolls.webp";
 import ajayProfile from "./Ajay.gif";
 import profile from "./Profile.png";
 import deliveryLogo from "./delivery.jpg"
+import headerBanner from "./header.jpg"
 
 export const assets = {
   logo,
   cart,
   ajayProfile,
   profile,
-  deliveryLogo
+  deliveryLogo,
+  headerBanner
 };
 
 export const categories = [
