@@ -59,8 +59,8 @@ const AddFood = () => {
             <textarea type="text" placeholder='Write Content Here....' className="form-control" id="description" name='description' required onChange={onChangeHandler} value={data.description}/>
           </div>
           <div className="mb-3">
-            <label htmlFor="categoty" className="form-label">Category</label>
-            <select name="categoty" id="categoty" className='form-control' onChange={onChangeHandler} value={data.categoty}>
+            <label htmlFor="category" className="form-label">Category</label>
+            <select name="category" id="category" className='form-control' onChange={onChangeHandler} value={data.category}>
               <option value="Biryani">Biryani</option>
               <option value="Cake">Cake</option>
               <option value="Pizza">Pizza</option>
